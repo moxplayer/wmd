@@ -62,7 +62,7 @@ def load_pickle(pickle_path):
 
 # export is a (Gephi) edge graph
 # requires : [pickle_dir] folder with the corresponding pickle files to compair pairwise: if from_dir == True// else it is a list of paths to pickle files
-def calcPairwiseDist(pickle_dir, similarity_dir, from_dir = True, experiment_name = ""):
+def calcPairwiseDist(pickle_dir, similarity_dir, from_dir = True, experiment_name = "", processes = 4):
     # use cosine
     use_cosine = True
 
@@ -106,7 +106,7 @@ def calcPairwiseDist(pickle_dir, similarity_dir, from_dir = True, experiment_nam
     # 4. For all comparison pairs run emd (Earth Mover's Distance)
     similarities = []
 
-    pool = Pool(processes=4)
+    pool = Pool(processes=processes)
     num_tasks = len(comparison_pairs)
     for  i, sim in enumerate(pool.map(calc_similarity, comparison_pairs), 1):
         sys.stderr.write('\rCalculated {}/{}({})% of all similarities'.format(i,num_tasks,round(i/num_tasks*100),2)) #0.%
