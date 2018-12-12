@@ -101,7 +101,7 @@ def calcPairwiseDist(pickle_dir, similarity_dir, from_dir = True, experiment_nam
     for i in xrange(N):
         for j in xrange(i+1,N):
             picklepath_pairs.append((pickle_paths[i], pickle_paths[j]))
-
+			
     # NOTE: If you want to parallelize this, you will have to add the fileIDs to the similarity output to the 'calc_similarity' method [fuse picklepath_pairs and comparison_pairs]
     # 4. For all comparison pairs run emd (Earth Mover's Distance)
     similarities = []
