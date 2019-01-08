@@ -20,7 +20,7 @@ from emd import emd
 # requires: [comparisonpair]: [(word_vectors1, word_weights1), (word_vectors1, word_weights1)]
 #           [use_cosine]: bool: True if cosine distance should be used
 # in order to apply the multiprocessing library, I removed the 'use_cosine' argument
-def calc_similarity(comparisonpair):#, use_cosine):
+def calc_similarity(comparisonpair, distance = cosine_distance):
     # load pickle files X, BOW_X = (word_vector_arrays, BOW-features)
     word_vectors1, word_weights1 = comparisonpair[0]
     word_vectors2, word_weights2 = comparisonpair[1]
