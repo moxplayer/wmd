@@ -16,11 +16,28 @@ from utilities import cosine_distance, euclidean_distance
 sys.path.append('./python-emd-master')
 from emd import emd
 
+
+
+# calculates similarities (WMD) for pairs of signatures (comparisonpair)
+# requires: [comparisonpairs]: [[(word_vectors1, word_weights1), (word_vectors2, word_weights2)], ...]
+#           [use_cosine]    : bool: True if cosine distance should be used
+# in order to apply the multiprocessing library, I removed the 'use_cosine' argument
+def calc_similarities(comparisonpairs, distance = cosine_distance, processes = 4):
+	similarities = []
+	# start pool processes
+	pool = Pool(processes=processes)
+	num_tasks = len(comparisonpairs)
+	# parallel calculation of distances
+	for  i, sim in enumerate(pool.map(calc_similarity, comparisonpairs), 1):
+		sys.stderr.write('\rCalculated {}/{}({})% of all similarities'.format(i,num_tasks,round(i/num_tasks*100),2)) #0.%
+		similarities.append(sim)
+	return similarities
+
 # calculates the similarity (WMD) between two pickle files
-# requires: [comparisonpair]: [(word_vectors1, word_weights1), (word_vectors1, word_weights1)]
+# requires: [comparisonpair]: [(word_vectors1, word_weights1), (word_vectors2, word_weights2)]
 #           [use_cosine]: bool: True if cosine distance should be used
 # in order to apply the multiprocessing library, I removed the 'use_cosine' argument
-def calc_similarity(comparisonpair):#, use_cosine):
+def calc_similarity(comparisonpair, distance = cosine_distance):
     # load pickle files X, BOW_X = (word_vector_arrays, BOW-features)
     word_vectors1, word_weights1 = comparisonpair[0]
     word_vectors2, word_weights2 = comparisonpair[1]
@@ -42,7 +59,7 @@ def calc_similarity(comparisonpair):#, use_cosine):
         # signature format: (list of vectors [number of vectors x embedding dimension], list of their weights)
         # with the cosine distance
         #if(use_cosine):
-        emd_result = emd( (word_vectors1, word_weights1), (word_vectors2, word_weights2), cosine_distance)
+        emd_result = emd( (word_vectors1, word_weights1), (word_vectors2, word_weights2), distance)
         # map the EMD output to [0,1]:
         similarity = float(float(1)-(emd_result/2 * 1.0))   
         # or with the euclidean distance HERE you might have to distinguish between normalized and non-normalized
