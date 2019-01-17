@@ -77,9 +77,20 @@ def load_pickle(pickle_path):
         pickle_load = pickle.load(f)
     return pickle_load
 
+	
+# use this in order to specify a distance function (for parallelization) in calcPairwiseDist
+def calc_similiarity_cosine(comparisonpair):
+	distance = cosine_distance
+	return calc_similarity(comparisonpair, distance = cosine_distance)
+# use this in order to specify a distance function (for parallelization) in calcPairwiseDist
+def calc_similiarity_euclidean(comparisonpair):
+	distance = euclidean_distance
+	return calc_similarity(comparisonpair, distance = cosine_distance)
+	
+	
 # export is a (Gephi) edge graph
 # requires : [pickle_dir] folder with the corresponding pickle files to compair pairwise: if from_dir == True// else it is a list of paths to pickle files
-def calcPairwiseDist(pickle_dir, similarity_dir, from_dir = True, experiment_name = "", processes = 4):
+def calcPairwiseDist(pickle_dir, similarity_dir, distance_function_string = "cosine", from_dir = True, experiment_name = "", processes = 4):
     # use cosine
     use_cosine = True
 
@@ -125,7 +136,18 @@ def calcPairwiseDist(pickle_dir, similarity_dir, from_dir = True, experiment_nam
 
     pool = Pool(processes=processes)
     num_tasks = len(comparison_pairs)
-    for  i, sim in enumerate(pool.map(calc_similarity, comparison_pairs), 1):
+
+    # switch between "cosine" and "euclidean" distance
+
+    if distance_function_string == "cosine":
+        run_calc = calc_similiarity_cosine
+    elif distance_function_string == "euclidean":
+        run_calc = calc_similiarity_euclidean
+    else:
+        print("unknown distance function string")
+        run_calc = None
+
+    for  i, sim in enumerate(pool.map(run_calc, comparison_pairs), 1):
         sys.stderr.write('\rCalculated {}/{}({})% of all similarities'.format(i,num_tasks,round(i/num_tasks*100),2)) #0.%
         similarities.append(sim)
     print('')
