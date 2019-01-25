@@ -85,15 +85,12 @@ def calc_similiarity_cosine(comparisonpair):
 # use this in order to specify a distance function (for parallelization) in calcPairwiseDist
 def calc_similiarity_euclidean(comparisonpair):
 	distance = euclidean_distance
-	return calc_similarity(comparisonpair, distance = cosine_distance)
+	return calc_similarity(comparisonpair, distance = euclidean_distance)
 	
 	
 # export is a (Gephi) edge graph
 # requires : [pickle_dir] folder with the corresponding pickle files to compair pairwise: if from_dir == True// else it is a list of paths to pickle files
 def calcPairwiseDist(pickle_dir, similarity_dir, distance_function_string = "cosine", from_dir = True, experiment_name = "", processes = 4):
-    # use cosine
-    use_cosine = True
-
     # export as gephi edge graph file
     as_gephi = True
 
