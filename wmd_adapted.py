@@ -81,11 +81,11 @@ def load_pickle(pickle_path):
 # use this in order to specify a distance function (for parallelization) in calcPairwiseDist
 def calc_similiarity_cosine(comparisonpair):
 	distance = cosine_distance
-	return calc_similarity(comparisonpair, distance = cosine_distance)
+	return calc_similarity(comparisonpair, distance = distance)
 # use this in order to specify a distance function (for parallelization) in calcPairwiseDist
 def calc_similiarity_euclidean(comparisonpair):
 	distance = euclidean_distance
-	return calc_similarity(comparisonpair, distance = euclidean_distance)
+	return calc_similarity(comparisonpair, distance = distance)
 	
 	
 # export is a (Gephi) edge graph
