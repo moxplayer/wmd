@@ -22,22 +22,33 @@ from emd import emd
 # requires: [comparisonpairs]: [[(word_vectors1, word_weights1), (word_vectors2, word_weights2)], ...]
 #           [use_cosine]    : bool: True if cosine distance should be used
 # in order to apply the multiprocessing library, I removed the 'use_cosine' argument
-def calc_similarities(comparisonpairs, distance = cosine_distance, processes = 4):
+def calc_similarities(comparisonpairs, distance_function_string = "cosine", processes = 4):
+	# switch between distance functions
+	if distance_function_string == "cosine":
+		run_calc = calc_similarity_cosine
+	elif distance_function_string == "euclidean":
+		run_calc = calc_similarity_euclidean
+	else:
+		print("unknown distance function string")
+		run_calc = None
+		
 	similarities = []
+	
 	# start pool processes
 	pool = Pool(processes=processes)
 	num_tasks = len(comparisonpairs)
 	# parallel calculation of distances
-	for  i, sim in enumerate(pool.map(calc_similarity, comparisonpairs), 1):
+	for  i, sim in enumerate(pool.map(run_calc, comparisonpairs), 1):
 		sys.stderr.write('\rCalculated {}/{}({})% of all similarities'.format(i,num_tasks,round(i/num_tasks*100),2)) #0.%
 		similarities.append(sim)
+		
+	
 	return similarities
 
 # calculates the similarity (WMD) between two pickle files
 # requires: [comparisonpair]: [(word_vectors1, word_weights1), (word_vectors2, word_weights2)]
-#           [use_cosine]: bool: True if cosine distance should be used
 # in order to apply the multiprocessing library, I removed the 'use_cosine' argument
-def calc_similarity(comparisonpair, distance = cosine_distance, cosine_adjustment = False):
+def calc_similarity(comparisonpair, distance = cosine_distance, cosine_adjustment = True):
     # load pickle files X, BOW_X = (word_vector_arrays, BOW-features)
     word_vectors1, word_weights1 = comparisonpair[0]
     word_vectors2, word_weights2 = comparisonpair[1]
@@ -57,7 +68,8 @@ def calc_similarity(comparisonpair, distance = cosine_distance, cosine_adjustmen
             similarity = float(float(1)-(emd_result/2 * 1.0))   
         else:
 			# take the reciprocal for an estimate of the similarity (instead of distance)
-		    similarity = float(1/emd_result)
+			# to adjust for euclidean distance
+		    similarity = float(1/float(emd_result))
         return similarity
 
 # load a pickle file from a pickle_path
@@ -69,13 +81,13 @@ def load_pickle(pickle_path):
 
 	
 # use this in order to specify a distance function (for parallelization) in calcPairwiseDist
-def calc_similiarity_cosine(comparisonpair):
+def calc_similarity_cosine(comparisonpair):
 	distance = cosine_distance
 	return calc_similarity(comparisonpair, distance = distance, cosine_adjustment = True)
 # use this in order to specify a distance function (for parallelization) in calcPairwiseDist
-def calc_similiarity_euclidean(comparisonpair):
+def calc_similarity_euclidean(comparisonpair):
 	distance = euclidean_distance
-	return calc_similarity(comparisonpair, distance = distance)
+	return calc_similarity(comparisonpair, distance = distance, cosine_adjustment = False)
 	
 	
 # export is a (Gephi) edge graph
@@ -127,9 +139,9 @@ def calcPairwiseDist(pickle_dir, similarity_dir, distance_function_string = "cos
     # switch between "cosine" and "euclidean" distance
 
     if distance_function_string == "cosine":
-        run_calc = calc_similiarity_cosine
+        run_calc = calc_similarity_cosine
     elif distance_function_string == "euclidean":
-        run_calc = calc_similiarity_euclidean
+        run_calc = calc_similarity_euclidean
     else:
         print("unknown distance function string")
         run_calc = None
