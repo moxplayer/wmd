@@ -37,18 +37,10 @@ def calc_similarities(comparisonpairs, distance = cosine_distance, processes = 4
 # requires: [comparisonpair]: [(word_vectors1, word_weights1), (word_vectors2, word_weights2)]
 #           [use_cosine]: bool: True if cosine distance should be used
 # in order to apply the multiprocessing library, I removed the 'use_cosine' argument
-def calc_similarity(comparisonpair, distance = cosine_distance):
+def calc_similarity(comparisonpair, distance = cosine_distance, cosine_adjustment = False):
     # load pickle files X, BOW_X = (word_vector_arrays, BOW-features)
     word_vectors1, word_weights1 = comparisonpair[0]
     word_vectors2, word_weights2 = comparisonpair[1]
-
-    # for TESTING ONLY#######################################################
-    #N = 100                                                               #
-    #########################################################################
-    # FOR TESTING ONLY!!!!!#################
-    #X, BOW_X  = slice_it(X, BOW_X, N) #####
-    #print(BOW_X)
-    ########################################
 
     # check if both files users are identical
     if (word_vectors1 == word_vectors2) and (word_weights1 == word_weights2):
@@ -61,13 +53,11 @@ def calc_similarity(comparisonpair, distance = cosine_distance):
         #if(use_cosine):
         emd_result = emd( (word_vectors1, word_weights1), (word_vectors2, word_weights2), distance)
         # map the EMD output to [0,1]:
-        similarity = float(float(1)-(emd_result/2 * 1.0))   
-        # or with the euclidean distance HERE you might have to distinguish between normalized and non-normalized
-        #else:
-        #    #print("Use euclidean-distance")
-        #    emd_result = emd((word_vectors1, word_weights1), (word_vectors2, word_weights2), euclidean_distance)
-        #    similarity = emd_result
-    
+        if cosine_adjustment:
+            similarity = float(float(1)-(emd_result/2 * 1.0))   
+        else:
+			# take the reciprocal for an estimate of the similarity (instead of distance)
+		    similarity = float(1/emd_result)
         return similarity
 
 # load a pickle file from a pickle_path
@@ -81,7 +71,7 @@ def load_pickle(pickle_path):
 # use this in order to specify a distance function (for parallelization) in calcPairwiseDist
 def calc_similiarity_cosine(comparisonpair):
 	distance = cosine_distance
-	return calc_similarity(comparisonpair, distance = distance)
+	return calc_similarity(comparisonpair, distance = distance, cosine_adjustment = True)
 # use this in order to specify a distance function (for parallelization) in calcPairwiseDist
 def calc_similiarity_euclidean(comparisonpair):
 	distance = euclidean_distance
